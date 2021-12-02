@@ -1,0 +1,1 @@
+from .create_product_request import CreateProductRequest
