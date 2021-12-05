@@ -9,9 +9,9 @@ class OID(str):
         yield cls.validate
 
     @classmethod
-    def validate(cls, v):
+    def validate(cls, oid):
         try:
-            return ObjectId(str(v))
+            return ObjectId(str(oid))
         except InvalidId:
             raise HTTPException(
                 status_code=400, detail="Could not parse invalid ObjectId."

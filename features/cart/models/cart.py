@@ -1,8 +1,7 @@
-from pydantic import BaseModel
+from features.cart.models import CartProduct
+from models import MongoModel
 
-from features.products.models import Product
 
-
-class Cart(BaseModel):
-    products: list[Product]
+class Cart(MongoModel):
+    products: list[CartProduct]
     balance: float

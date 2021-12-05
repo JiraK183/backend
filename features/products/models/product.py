@@ -7,4 +7,3 @@ class Product(MongoModel):
     name: str
     type: ProductType
     price: float
-    quantity: int

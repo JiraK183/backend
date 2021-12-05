@@ -1,3 +1,5 @@
+from typing import Union
+
 from bson import ObjectId
 from fastapi import HTTPException
 
@@ -16,7 +18,7 @@ def get_products() -> list[Product]:
     return [_parse_product(product) for product in product_dicts]
 
 
-def get_products_by_ids(product_ids: list[OID]) -> list[Product]:
+def get_products_by_ids(product_ids: list[Union[OID, ObjectId]]) -> list[Product]:
     product_dicts = list(products_collection.find({"_id": {"$in": product_ids}}))
 
     if len(product_dicts) == 0:
@@ -37,7 +39,7 @@ def create_product(
 
     return Product(
         **request_body,
-        id=str(_id.inserted_id),
+        id=_id.inserted_id,
     )
 
 
@@ -50,9 +52,8 @@ def delete_product(product_id: str) -> None:
 
 def _parse_product(product: dict) -> Product:
     return Product(
-        id=str(product["_id"]),
+        id=product["_id"],
         name=product["name"],
         type=ProductType(product["type"]),
         price=product["price"],
-        quantity=product["quantity"],
     )

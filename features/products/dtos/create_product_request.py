@@ -7,4 +7,3 @@ class CreateProductRequest(BaseModel):
     name: str
     type: ProductType
     price: float
-    quantity: int

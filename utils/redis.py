@@ -43,7 +43,7 @@ def get_from_cache(key: str):
 
 
 def cache(key: str, value, ex=None):
-    if isinstance(value, List) or isinstance(value, dict):
+    if isinstance(value, list) or isinstance(value, dict) or isinstance(value, set):
         value = AdvancedHashValue(redisValue=value).json()
 
     redis_client.set(key, value, ex=ex)
