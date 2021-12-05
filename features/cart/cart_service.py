@@ -63,6 +63,7 @@ def _get_cart_with_products(cart_product_quantity: dict[str, int]) -> Cart:
 
 def _get_balance(cart_products: list[CartProduct]) -> float:
     balance = 0
+
     for cart_product in cart_products:
         balance += (
             cart_product.price * cart_product.quantity
