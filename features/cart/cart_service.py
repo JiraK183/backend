@@ -16,6 +16,9 @@ discount = 1
 def get_cart(session_id: str) -> Cart:
     cart_product_quantity = redis.get_from_cache(session_id)
 
+    if cart_product_quantity is None:
+        return Cart(products=[], balance=0)
+
     return _get_cart_with_products(cart_product_quantity)
 
 
