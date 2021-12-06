@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional
 
 from bson import ObjectId
 from fastapi import HTTPException
@@ -18,7 +18,12 @@ def get_products() -> list[Product]:
     return [_parse_product(product) for product in product_dicts]
 
 
-def get_products_by_ids(product_ids: list[Union[OID, ObjectId]]) -> list[Product]:
+def get_products_by_ids(
+    product_ids: Optional[list[Union[OID, ObjectId]]]
+) -> list[Product]:
+    if product_ids is None:
+        raise HTTPException(status_code=400, detail="Product ids must be specified.")
+
     product_dicts = list(products_collection.find({"_id": {"$in": product_ids}}))
 
     if len(product_dicts) == 0:
