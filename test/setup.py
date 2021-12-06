@@ -3,7 +3,7 @@
 from pymongo import MongoClient
 
 from features.products.models import Product
-from tests.mocks import mock_products
+from test.mocks import mock_products
 from utils import redis_client
 
 

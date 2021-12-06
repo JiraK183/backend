@@ -4,8 +4,8 @@ from fastapi import HTTPException
 
 from features.products import products_service
 from features.products.dtos import CreateProductRequest
-from tests.mocks import mock_products
-from tests.setup import create_mock_data
+from test.mocks import mock_products
+from test.setup import create_mock_data
 from utils import mongo_client
 
 

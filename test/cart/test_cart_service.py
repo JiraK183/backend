@@ -5,8 +5,8 @@ from fastapi import HTTPException
 from features.cart import cart_service
 from features.cart.dtos import AddToCartRequest
 from features.cart.models import CartProduct, Cart
-from tests.mocks import mock_products
-from tests.setup import create_mock_data
+from test.mocks import mock_products
+from test.setup import create_mock_data
 from utils import mongo_client
 
 
