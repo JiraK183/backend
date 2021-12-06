@@ -7,3 +7,10 @@ class Product(MongoModel):
     name: str
     type: ProductType
     price: float
+
+    def __eq__(self, other):
+        return (
+            self.name == other.name
+            and self.type == other.type
+            and self.price == other.price
+        )
