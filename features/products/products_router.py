@@ -13,7 +13,7 @@ async def get_products():
 
 
 @products_router.get("/ids")
-async def get_products_by_ids(product_ids: list[OID] = Query(None)):
+async def get_products_by_ids(product_ids: list[OID] = Query([])):
     return {"products": products_service.get_products_by_ids(product_ids)}
 
 
