@@ -1,4 +1,4 @@
-# Shopping API
+# JIRA K183 Backend
 
 ## Setup
 
