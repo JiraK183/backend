@@ -1,5 +1,7 @@
 # JIRA K183 Backend
 
+This is the Python backend repository for K183 Jira project.
+
 ## Environment
 
 To run the API, create an `.env` file using local or remote database.
