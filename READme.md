@@ -1,3 +1,4 @@
+![Logo](https://avatars.githubusercontent.com/u/102261451?s=200&v=4)
 # JIRA K183 Backend
 
 This is the Python backend repository for K183 Jira project.
