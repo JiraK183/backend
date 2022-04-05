@@ -1,0 +1,35 @@
+name: Push to Docker Hub - PROD
+on:
+  push:
+    branches:
+      - main
+jobs:
+  docker_hub:
+    name: Push to Docker Hub
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Cache Docker Layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+          logout: true
+
+      - name: Build and Push to Docker Hub
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: kurzcode/k183-api:prod
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache

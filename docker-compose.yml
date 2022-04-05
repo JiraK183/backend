@@ -29,7 +29,6 @@ services:
       MONGO_DATABASE: ${MONGO_DATABASE}
     depends_on:
       - mongo
-      - redis
     ports:
       - ${API_PORT}:80
     restart: always
