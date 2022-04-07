@@ -1,10 +1,7 @@
 import datetime
-from operator import isub
-from turtle import done
-from typing import Tuple
 from atlassian import Jira
-from numpy import array
 
+from features.auth.models import CurrentUser
 from utils.env import get_env, JIRA_SPACE, JIRA_API_KEY, JIRA_USERNAME
 
 PROJECT = "K183"
@@ -14,12 +11,6 @@ jira = Jira(
     username=get_env(JIRA_USERNAME),
     password=get_env(JIRA_API_KEY),
 )
-
-
-def get_my_issues() -> None:
-    issues = jira.get_all_project_issues(project=PROJECT)
-
-    print(issues)
 
 
 def get_leaderboard() -> list[tuple]:
@@ -58,7 +49,7 @@ def get_leaderboard() -> list[tuple]:
     return leaderboard
 
 
-def get_my_story_points_completed_today(current_user: str) -> list[tuple]:
+def get_my_story_points_completed_today(current_user: CurrentUser) -> list[tuple]:
     my_issues = __get_my_stories(current_user)
     # filter issues that have been completed today
     my_issues_completed_today = []
@@ -78,7 +69,7 @@ def get_my_story_points_completed_today(current_user: str) -> list[tuple]:
     return my_issues_completed_today
 
 
-def get_my_active_stories(current_user: str) -> list[tuple]:
+def get_my_active_stories(current_user: CurrentUser) -> list[tuple]:
     my_issues = __get_my_stories(current_user)
     # filter issues that have been completed today
     my_active_issues = []
@@ -89,7 +80,7 @@ def get_my_active_stories(current_user: str) -> list[tuple]:
     return my_active_issues
 
 
-def get_my_coins(current_user: str) -> int:
+def get_my_coins(current_user: CurrentUser) -> int:
     my_stories = __get_my_stories(current_user)
 
     story_ponts = []
@@ -105,13 +96,16 @@ def get_my_coins(current_user: str) -> int:
     return sum(story_ponts)
 
 
-def __get_my_stories(current_user: str) -> list[tuple]:
+def __get_my_stories(current_user: CurrentUser) -> list[tuple]:
+    print(current_user)
     issues = jira.get_all_project_issues(project=PROJECT)
     my_issues = []
     for issue in issues:
+        print(issue["fields"]["assignee"])
         if (
             issue["fields"]["assignee"] is not None
-            and issue["fields"]["assignee"]["displayName"] == current_user
+            and "emailAddress" in issue["fields"]["assignee"]
+            and issue["fields"]["assignee"]["emailAddress"] == current_user.username
         ):
             my_issues.append(issue)
     return my_issues
