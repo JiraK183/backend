@@ -15,15 +15,11 @@ async def get_leaderboard():
     return {"leaderboard": coins_service.get_leaderboard()}
 
 
-@coins_router.get("/my-active-stories")
-async def get_my_active_stories(userName: str):
-    return {"my_active_stories": coins_service.get_my_active_stories(userName)}
+@coins_router.get("/active")
+async def get_active_stories(current_user: str):
+    return {"stories": coins_service.get_active(current_user)}
 
 
-@coins_router.get("/my-completed-stories-today")
-async def get_my_completed_stories_today(userName: str):
-    return {
-        "my_completed_stories_today": coins_service.get_my_completed_stories_today(
-            userName
-        )
-    }
+@coins_router.get("/completed-today")
+async def get_completed_today_stories(current_user: str):
+    return {"stories": coins_service.get_completed_today_stories(current_user)}

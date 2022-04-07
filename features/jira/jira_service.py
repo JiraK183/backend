@@ -33,9 +33,9 @@ def get_leaderboard() -> list[tuple]:
     leaderboard = {}
     for issue in done_issues:
         assignee = issue["fields"]["assignee"]
-        # if assignee is not assigned, assign to "Unassigned"
+        # if assignee is not assigned, continue
         if assignee is None:
-            assignee = "SP Charity"
+            continue
         else:
             assignee = assignee["displayName"]
 
@@ -58,18 +58,8 @@ def get_leaderboard() -> list[tuple]:
     return leaderboard
 
 
-def get_my_stories(current_user: str) -> list[tuple]:
-    issues = jira.get_all_project_issues(project=PROJECT)
-    # filter issues that have issue['fields']['status']['name'] == "Done"
-    my_issues = []
-    for issue in issues:
-        if issue["fields"]["assignee"] == current_user:
-            my_issues.append(issue)
-    return my_issues
-
-
 def get_my_story_points_completed_today(current_user: str) -> list[tuple]:
-    my_issues = get_my_stories(current_user)
+    my_issues = __get_my_stories(current_user)
     # filter issues that have been completed today
     my_issues_completed_today = []
     for issue in my_issues:
@@ -89,7 +79,7 @@ def get_my_story_points_completed_today(current_user: str) -> list[tuple]:
 
 
 def get_my_active_stories(current_user: str) -> list[tuple]:
-    my_issues = get_my_stories(current_user)
+    my_issues = __get_my_stories(current_user)
     # filter issues that have been completed today
     my_active_issues = []
     for issue in my_issues:
@@ -97,3 +87,13 @@ def get_my_active_stories(current_user: str) -> list[tuple]:
         if issue["fields"]["status"]["name"] == "Done":
             my_active_issues.remove(issue)
     return my_active_issues
+
+
+def __get_my_stories(current_user: str) -> list[tuple]:
+    issues = jira.get_all_project_issues(project=PROJECT)
+    # filter issues that have issue['fields']['status']['name'] == "Done"
+    my_issues = []
+    for issue in issues:
+        if issue["fields"]["assignee"] == current_user:
+            my_issues.append(issue)
+    return my_issues

@@ -9,9 +9,9 @@ def get_leaderboard() -> list:
     return jira_service.get_leaderboard()
 
 
-def get_my_active_stories(userName) -> list:
-    return jira_service.get_my_active_stories(userName)
+def get_active(current_user) -> list:
+    return jira_service.get_my_active_stories(current_user)
 
 
-def get_my_completed_stories_today(userName) -> list:
-    return jira_service.get_my_story_points_completed_today(userName)
+def get_completed_today_stories(current_user) -> list:
+    return jira_service.get_my_story_points_completed_today(current_user)
