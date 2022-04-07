@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
 
+from atlassian import Jira
 from fastapi import Depends, FastAPI, HTTPException, status, APIRouter
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
@@ -9,6 +10,10 @@ from pydantic import BaseModel
 
 # to get a string like this run:
 # openssl rand -hex 32
+from features.auth import auth_service
+from features.auth.dtos import AccessTokenRequest
+from utils.env import get_env, JIRA_SPACE, JIRA_USERNAME, JIRA_API_KEY
+
 SECRET_KEY = "dd742d6d03ad786aedf841fcae7f58312fa657331450a887e8b110be962a2de1"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -63,15 +68,21 @@ def authenticate_user(fake_db, username: str, password: str):
     return user
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+def create_access_token(data: dict, expires_delta: timedelta):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid JIRA credentials.",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    Jira(
+        url=get_env(JIRA_SPACE),
+        username=get_env(JIRA_USERNAME),
+        password=get_env(JIRA_API_KEY),
+    )
     to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
+    expire = datetime.utcnow() + expires_delta
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
@@ -101,26 +112,11 @@ async def get_current_active_user(current_user: TokenData = Depends(get_current_
 
 
 @auth_router.post("/token", response_model=Token)
-async def login_for_access_token():
-    user = None
-    # if not user:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_401_UNAUTHORIZED,
-    #         detail="Incorrect username or password",
-    #         headers={"WWW-Authenticate": "Bearer"},
-    #     )
-    # access_token = create_access_token(
-    #     data={"sub": user.username},
-    #     expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
-    # )
-    return {
-        "access_token": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJKdXN0YXMgVXJib25hcyIsImV4cCI6MTY0OTM2Nzg5NH0.VZQScMyArcO0a302OCxGmLG6isMWehHGvjMaB_XhRn0",
-    }
-
-
-if __name__ == "__main__":
-    access_token = create_access_token(
-        data={"sub": "Justas Urbonas"},
+async def get_access_token(access_token_request: AccessTokenRequest):
+    access_token = auth_service.create_access_token(
+        access_token_request=access_token_request,
         expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     )
-    print(access_token)
+    return {
+        "access_token": f"Bearer {access_token}",
+    }
