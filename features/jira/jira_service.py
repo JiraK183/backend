@@ -89,6 +89,22 @@ def get_my_active_stories(current_user: str) -> list[tuple]:
     return my_active_issues
 
 
+def get_my_coins(current_user: str) -> int:
+    my_stories = __get_my_stories(current_user)
+
+    story_ponts = []
+
+    for issue in my_stories:
+        points = issue["fields"]["customfield_10016"]
+        # if points not assigned or points is not a number, assign to 0
+        if points is None or not isinstance(points, float):
+            points = 0
+
+        story_ponts.append(points)
+
+    return sum(story_ponts)
+
+
 def __get_my_stories(current_user: str) -> list[tuple]:
     issues = jira.get_all_project_issues(project=PROJECT)
     # filter issues that have issue['fields']['status']['name'] == "Done"

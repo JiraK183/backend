@@ -4,3 +4,4 @@ pydantic==1.8.2
 pymongo==3.12.1
 python-dotenv==0.19.2
 atlassian-python-api==3.20.1
+numpy==1.22.3
