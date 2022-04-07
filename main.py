@@ -2,7 +2,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from features import coins_router, stories_router
+from features import coins_router, stories_router, auth_router
 from utils.env import get_env, API_PORT
 
 app = FastAPI(docs_url="/")
@@ -15,6 +15,7 @@ app.add_middleware(
 )
 
 
+app.include_router(auth_router)
 app.include_router(coins_router)
 app.include_router(stories_router)
 
