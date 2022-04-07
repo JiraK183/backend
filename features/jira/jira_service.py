@@ -107,9 +107,11 @@ def get_my_coins(current_user: str) -> int:
 
 def __get_my_stories(current_user: str) -> list[tuple]:
     issues = jira.get_all_project_issues(project=PROJECT)
-    # filter issues that have issue['fields']['status']['name'] == "Done"
     my_issues = []
     for issue in issues:
-        if issue["fields"]["assignee"] == current_user:
+        if (
+            issue["fields"]["assignee"] is not None
+            and issue["fields"]["assignee"]["displayName"] == current_user
+        ):
             my_issues.append(issue)
     return my_issues
