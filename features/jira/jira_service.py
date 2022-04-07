@@ -84,8 +84,8 @@ def get_my_active_stories(current_user: str) -> list[tuple]:
     my_active_issues = []
     for issue in my_issues:
         # remove issues that their status is "Done"
-        if issue["fields"]["status"]["name"] == "Done":
-            my_active_issues.remove(issue)
+        if not issue["fields"]["status"]["name"] == "Done":
+            my_active_issues.append(issue)
     return my_active_issues
 
 
