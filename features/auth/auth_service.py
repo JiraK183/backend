@@ -9,7 +9,7 @@ from features.auth.dtos import AccessTokenRequest
 
 SECRET_KEY = "dd742d6d03ad786aedf841fcae7f58312fa657331450a887e8b110be962a2de1"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
