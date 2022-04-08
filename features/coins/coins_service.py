@@ -6,5 +6,5 @@ def get_my_coins(current_user: CurrentUser) -> int:
     return jira_service.get_my_coins(current_user)
 
 
-def get_leaderboard() -> list:
-    return jira_service.get_leaderboard()
+def get_leaderboard(current_user: CurrentUser) -> list:
+    return jira_service.get_leaderboard(current_user)

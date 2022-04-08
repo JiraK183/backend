@@ -15,5 +15,5 @@ async def get_my_coins(current_user: CurrentUser = Depends(get_current_user)):
 
 
 @coins_router.get("/leaderboard")
-async def get_leaderboard():
-    return {"leaderboard": coins_service.get_leaderboard()}
+async def get_leaderboard(current_user: CurrentUser = Depends(get_current_user)):
+    return {"leaderboard": coins_service.get_leaderboard(current_user)}

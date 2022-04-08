@@ -2,18 +2,12 @@ import datetime
 from atlassian import Jira
 
 from features.auth.models import CurrentUser
-from utils.env import get_env, JIRA_SPACE, JIRA_API_KEY, JIRA_USERNAME
 
 PROJECT = "K183"
 
-jira = Jira(
-    url=get_env(JIRA_SPACE),
-    username=get_env(JIRA_USERNAME),
-    password=get_env(JIRA_API_KEY),
-)
 
-
-def get_leaderboard() -> list[tuple]:
+def get_leaderboard(current_user: CurrentUser) -> list[tuple]:
+    jira = __get_jira_client(current_user)
     issues = jira.get_all_project_issues(project=PROJECT)
     # filter issues that have issue['fields']['status']['name'] == "Done"
     done_issues = []
@@ -97,7 +91,7 @@ def get_my_coins(current_user: CurrentUser) -> int:
 
 
 def __get_my_stories(current_user: CurrentUser) -> list[tuple]:
-    print(current_user)
+    jira = __get_jira_client(current_user)
     issues = jira.get_all_project_issues(project=PROJECT)
     my_issues = []
     for issue in issues:
@@ -109,3 +103,11 @@ def __get_my_stories(current_user: CurrentUser) -> list[tuple]:
         ):
             my_issues.append(issue)
     return my_issues
+
+
+def __get_jira_client(current_user: CurrentUser) -> Jira:
+    return Jira(
+        url=current_user.space,
+        username=current_user.username,
+        password=current_user.api_key,
+    )
