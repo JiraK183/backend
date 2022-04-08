@@ -12,7 +12,7 @@ def get_leaderboard(current_user: CurrentUser) -> list[tuple]:
     # filter issues that have issue['fields']['status']['name'] == "Done"
     done_issues = []
     for issue in issues:
-        if issue["fields"]["status"]["name"] == "Done":
+        if __is_issue_complete(issue):
             done_issues.append(issue)
     # group results by assignee and add total points
     leaderboard = {}
@@ -82,7 +82,11 @@ def get_my_coins(current_user: CurrentUser) -> int:
     for issue in my_stories:
         points = issue["fields"]["customfield_10016"]
         # if points not assigned or points is not a number, assign to 0
-        if points is None or not isinstance(points, float):
+        if (
+            points is None
+            or not isinstance(points, float)
+            or not __is_issue_complete(issue)
+        ):
             points = 0
 
         story_ponts.append(points)
@@ -110,4 +114,11 @@ def __get_jira_client(current_user: CurrentUser) -> Jira:
         url=current_user.space,
         username=current_user.username,
         password=current_user.api_key,
+    )
+
+
+def __is_issue_complete(issue: dict) -> bool:
+    return (
+        issue["fields"]["status"]["name"] == "Done"
+        or issue["fields"]["status"]["name"] == "Verified"
     )
