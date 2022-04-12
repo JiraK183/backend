@@ -48,18 +48,22 @@ def get_my_story_points_completed_today(current_user: CurrentUser) -> list[tuple
     # filter issues that have been completed today
     my_issues_completed_today = []
     for issue in my_issues:
-        today = datetime.today()
-        day_issue_was_last_updated = issue["fields"]["updated"]
+        today = datetime.datetime.today()
+        issue_last_updated = issue["fields"]["updated"]
         # convert to datetime format
-        day_issue_was_last_updated = datetime.strptime(
-            day_issue_was_last_updated, "%Y-%m-%dT%H:%M:%S.%f%z"
+        issue_last_updated = datetime.datetime.strptime(
+            issue_last_updated, "%Y-%m-%dT%H:%M:%S.%f%z"
         )
-        # if issue was finished today, add to list
-        if day_issue_was_last_updated.day == today.day:
+        # compare both dates as year/month/day only, if true, issue was updated today
+        if (
+            today.year == issue_last_updated.year
+            and today.month == issue_last_updated.month
+            and today.day == issue_last_updated.day
+        ):
             my_issues_completed_today.append(issue)
-        # remove issues that their status is not "Done"
-        if issue["fields"]["status"]["name"] != "Done":
-            my_issues_completed_today.remove(issue)
+            # remove issues that their status is not "Done"
+            if not __is_issue_complete(issue):
+                my_issues_completed_today.remove(issue)
     return my_issues_completed_today
 
 
@@ -99,7 +103,6 @@ def __get_my_stories(current_user: CurrentUser) -> list[tuple]:
     issues = jira.get_all_project_issues(project=PROJECT)
     my_issues = []
     for issue in issues:
-        print(issue["fields"]["assignee"])
         if (
             issue["fields"]["assignee"] is not None
             and "emailAddress" in issue["fields"]["assignee"]
@@ -118,7 +121,5 @@ def __get_jira_client(current_user: CurrentUser) -> Jira:
 
 
 def __is_issue_complete(issue: dict) -> bool:
-    return (
-        issue["fields"]["status"]["statusCategory"]["name"] == "Done"
-        or issue["fields"]["status"]["statusCategory"]["name"] == "Verified"
-    )
+    status = issue["fields"]["status"]["statusCategory"]["name"]
+    return status == "Done" or status == "Verified"
