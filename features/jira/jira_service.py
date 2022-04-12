@@ -69,7 +69,7 @@ def get_my_active_stories(current_user: CurrentUser) -> list[tuple]:
     my_active_issues = []
     for issue in my_issues:
         # remove issues that their status is "Done"
-        if not issue["fields"]["status"]["name"] == "Done":
+        if not __is_issue_complete(issue):
             my_active_issues.append(issue)
     return my_active_issues
 
@@ -119,6 +119,6 @@ def __get_jira_client(current_user: CurrentUser) -> Jira:
 
 def __is_issue_complete(issue: dict) -> bool:
     return (
-        issue["fields"]["status"]["name"] == "Done"
-        or issue["fields"]["status"]["name"] == "Verified"
+        issue["fields"]["status"]["statusCategory"]["name"] == "Done"
+        or issue["fields"]["status"]["statusCategory"]["name"] == "Verified"
     )
