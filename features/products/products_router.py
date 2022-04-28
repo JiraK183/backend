@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends
 
+from features.auth.auth_service import get_current_user
 from features.products import products_service
 from features.products.dtos import CreateProductRequest
-from models import OID
 
-products_router = APIRouter(prefix="/products", tags=["Products"])
+products_router = APIRouter(
+    prefix="/products", tags=["Products"], dependencies=[Depends(get_current_user)]
+)
 
 
 @products_router.get("/")
@@ -12,9 +14,9 @@ async def get_products():
     return {"products": products_service.get_products()}
 
 
-@products_router.get("/ids")
-async def get_products_by_ids(product_ids: list[OID] = Query(None)):
-    return {"products": products_service.get_products_by_ids(product_ids)}
+# @products_router.get("/ids")
+# async def get_products_by_ids(product_ids: list[OID] = Query(None)):
+#     return {"products": products_service.get_products_by_ids(product_ids)}
 
 
 @products_router.post("/")
