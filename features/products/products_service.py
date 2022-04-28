@@ -58,6 +58,8 @@ def delete_product(product_id: str) -> None:
 
 
 def purchase_product(product_id: str, current_user: CurrentUser) -> None:
+    get_products_by_ids([ObjectId(product_id)])  # 404 not found validation
+
     product = products_collection.find_one(
         {"_id": ObjectId(product_id), "ownedBy": current_user.username}
     )
