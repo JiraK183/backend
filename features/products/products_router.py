@@ -22,7 +22,7 @@ async def create_product(create_product_request: CreateProductRequest):
 
 @products_router.get("/my")
 async def get_my_products(current_user: CurrentUser = Depends(get_current_user)):
-    return {"products": products_service.get_my_products(current_user)}
+    return {"products": products_service.get_user_products(current_user)}
 
 
 @products_router.delete("/{product_id}/", status_code=204)

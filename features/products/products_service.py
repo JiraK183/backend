@@ -18,7 +18,7 @@ def get_products(match: dict = None) -> list[Product]:
     return [__parse_product(product) for product in product_dicts]
 
 
-def get_my_products(current_user: CurrentUser) -> list[Product]:
+def get_user_products(current_user: CurrentUser) -> list[Product]:
     return get_products({"ownedBy": current_user.username})
 
 
