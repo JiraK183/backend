@@ -37,9 +37,7 @@ def create_product(
     request_body = create_product_request.dict()
 
     # OpenAPI 'type' enum matching (instead of str)
-    _id = products_collection.insert_one(
-        {**request_body, "type": request_body["type"].value}
-    )
+    _id = products_collection.insert_one(request_body)
 
     return Product(
         **request_body,
