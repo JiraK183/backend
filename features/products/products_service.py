@@ -31,7 +31,7 @@ def get_products_by_ids(
     product_dicts = list(products_collection.find({"_id": {"$in": product_ids}}))
 
     if len(product_dicts) == 0:
-        raise HTTPException(status_code=404, detail="No such products not found.")
+        raise HTTPException(status_code=404, detail="No such products found.")
 
     return [__parse_product(product) for product in product_dicts]
 

@@ -108,7 +108,9 @@ def __get_my_stories(current_user: CurrentUser) -> list[tuple]:
             and "emailAddress" in issue["fields"]["assignee"]
             and issue["fields"]["assignee"]["emailAddress"] == current_user.username
         ):
-            my_issues.append(issue)
+            my_issues.append(
+                {**issue, "url": f"{current_user.space}/browse/{issue['key']}"}
+            )
     return my_issues
 
 
