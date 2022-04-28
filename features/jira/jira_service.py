@@ -123,5 +123,5 @@ def __get_jira_client(current_user: CurrentUser) -> Jira:
 
 
 def __is_issue_complete(issue: dict) -> bool:
-    status = issue["fields"]["status"]["statusCategory"]["name"]
+    status = issue["fields"]["status"]["name"]
     return status == "Done" or status == "Verified"
