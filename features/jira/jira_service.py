@@ -29,11 +29,9 @@ def get_leaderboard(current_user: CurrentUser) -> list[tuple]:
                 assignees.append(assignee)
     
     for assignee in assignees:
-        user:CurrentUser = {
-            "username": assignee,
-        }
+        user = current_user
         user_coins = get_my_coins(user)
-        leaderboard[assignee] = user_coins
+        leaderboard[assignee["displayName"]] = user_coins
 
     # sort leaderboard by points
     sorted_leaderboard = sorted(leaderboard.items(), key=lambda x: x[1], reverse=True)
