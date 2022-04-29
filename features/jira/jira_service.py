@@ -2,6 +2,7 @@ import datetime
 from atlassian import Jira
 
 from features.auth.models import CurrentUser
+from features.products.products_service import get_user_products
 
 PROJECT = "K183"
 
@@ -82,9 +83,14 @@ def get_my_active_stories(current_user: CurrentUser) -> list[tuple]:
 def get_my_coins(current_user: CurrentUser) -> int:
     my_stories = __get_my_stories(current_user)
 
-    story_ponts = []
+    activity_days = []
 
     for issue in my_stories:
+        issue_last_updated = issue["fields"]["updated"]
+        # convert to datetime format yyyy-mm-dd
+        issue_last_updated = datetime.datetime.strptime(
+            issue_last_updated, "%Y-%m-%dT%H:%M:%S.%f%z"
+        ).strftime("%Y-%m-%d")
         points = issue["fields"]["customfield_10016"]
         # if points not assigned or points is not a number, assign to 0
         if (
@@ -93,10 +99,58 @@ def get_my_coins(current_user: CurrentUser) -> int:
             or not __is_issue_complete(issue)
         ):
             points = 0
+        activity_days.append({ "points":points, "date":issue_last_updated})
 
-        story_ponts.append(points)
+    # sort by date
+    activity_days = sorted(activity_days, key=lambda x: x["date"])
+    # group by date
+    activity_days_grouped = {}
+    for activity_day in activity_days:
+        date = activity_day["date"]
+        if date in activity_days_grouped:
+            activity_days_grouped[date] += activity_day["points"]
+        else:
+            activity_days_grouped[date] = activity_day["points"]
 
-    return sum(story_ponts)
+    # convert to list of tuples {date: date, points: points}
+    activity_days_list = []
+    for date, points in activity_days_grouped.items():
+        activity_days_list.append({"date": date, "points": points})
+
+    streak_multiplier = 1
+    my_coins = 0
+    # iterate through the list and add 1000 * streak_multiplier coins for each day, if two days are next to each other increase streak_multiplier by 0.1
+    for i in range(len(activity_days_list)):
+        if i == 0:
+            my_coins += 1000 * streak_multiplier
+            continue
+        if __is_date_next_day(activity_days_list[i-1]["date"], activity_days_list[i]["date"]):
+            streak_multiplier += 0.1
+        else:
+            if not __is_date_weekend_gap(activity_days_list[i-1]["date"], activity_days_list[i]["date"]):
+                streak_multiplier -= 0.1
+                if streak_multiplier < 1:
+                    streak_multiplier = 1
+        my_coins += 1000 * streak_multiplier + activity_days_list[i]["points"] * 10
+
+    my_products = get_user_products(current_user)
+    # subract my coins by sum of all products
+    for product in my_products:
+        my_coins -= product["price"]
+
+    return (my_coins)
+
+
+def __is_date_weekend_gap(date1: str, date2: str) -> bool:
+    date1 = datetime.datetime.strptime(date1, "%Y-%m-%d")
+    date2 = datetime.datetime.strptime(date2, "%Y-%m-%d")
+    return date1.weekday() == 6 and date2.weekday() == 0
+
+
+def __is_date_next_day(date1: str, date2: str) -> bool:
+    date1 = datetime.datetime.strptime(date1, "%Y-%m-%d")
+    date2 = datetime.datetime.strptime(date2, "%Y-%m-%d")
+    return (date1 - date2).days == 1
 
 
 def __get_my_stories(current_user: CurrentUser) -> list[tuple]:
