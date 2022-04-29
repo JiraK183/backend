@@ -101,8 +101,12 @@ def get_my_coins(current_user: CurrentUser) -> int:
 def __get_my_stories(current_user: CurrentUser) -> list[tuple]:
     jira = __get_jira_client(current_user)
     issues = jira.get_all_project_issues(project=PROJECT)
+    all_issues = issues
+    while len(issues) == 50:
+        issues = jira.get_all_project_issues(project=PROJECT, start=len(all_issues))
+        all_issues = [*all_issues, *issues]
     my_issues = []
-    for issue in issues:
+    for issue in all_issues:
         if (
             issue["fields"]["assignee"] is not None
             and "emailAddress" in issue["fields"]["assignee"]
