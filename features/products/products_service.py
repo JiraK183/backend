@@ -8,6 +8,7 @@ from features.products.dtos import CreateProductRequest
 from features.products.models import Product
 from models import OID
 from utils import mongo_client
+from features.jira.jira_service import get_my_coins
 
 products_collection = mongo_client.products
 
@@ -66,6 +67,10 @@ def purchase_product(product_id: str, current_user: CurrentUser) -> None:
 
     if product is not None:
         raise HTTPException(status_code=400, detail="You may not buy an item twice.")
+
+    if product["price"] > get_my_coins(current_user):
+        raise HTTPException(status_code=400, detail="You don't have enough coins.")
+
 
     products_collection.update_one(
         {"_id": ObjectId(product_id)}, {"$push": {"ownedBy": current_user.username}}
