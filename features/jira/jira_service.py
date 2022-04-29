@@ -16,23 +16,24 @@ def get_leaderboard(current_user: CurrentUser) -> list[tuple]:
             done_issues.append(issue)
     # group results by assignee and add total points
     leaderboard = {}
+    assignees = []
     for issue in done_issues:
         assignee = issue["fields"]["assignee"]
         # if assignee is not assigned, continue
         if assignee is None:
             continue
         else:
-            assignee = assignee["displayName"]
+            # if assignee is not in leaderboard, add it to assignees
+            if assignee not in assignees:
+                assignees.append(assignee)
+    
+    for assignee in assignees:
+        user:CurrentUser = {
+            "username": assignee,
+        }
+        user_coins = get_my_coins(user)
+        leaderboard[assignee] = user_coins
 
-        points = issue["fields"]["customfield_10016"]
-        # if points not assigned or points is not a number, assign to 0
-        if points is None or not isinstance(points, float):
-            points = 0
-
-        if assignee in leaderboard:
-            leaderboard[assignee] += points
-        else:
-            leaderboard[assignee] = points
     # sort leaderboard by points
     sorted_leaderboard = sorted(leaderboard.items(), key=lambda x: x[1], reverse=True)
     # make leaderboard in the form of dict(name: assignee, points: points)
