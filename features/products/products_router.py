@@ -35,3 +35,13 @@ async def purchase_product(
     product_id: str, current_user: CurrentUser = Depends(get_current_user)
 ):
     return products_service.purchase_product(product_id, current_user)
+
+
+@products_router.get("/leaderboard/quality")
+async def get_leaderboard(current_user: CurrentUser = Depends(get_current_user)):
+    return {"leaderboard": products_service.get_leaderboard_quality(current_user)}
+
+
+@products_router.get("/leaderboard/quantity")
+async def get_leaderboard(current_user: CurrentUser = Depends(get_current_user)):
+    return {"leaderboard": products_service.get_leaderboard_quality(current_user)}

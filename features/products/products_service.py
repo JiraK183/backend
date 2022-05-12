@@ -85,3 +85,11 @@ def __parse_product(product: dict) -> Product:
         image_url=product["image_url"],
         price=product["price"],
     )
+
+
+def get_leaderboard_quality(current_user: CurrentUser) -> list[Product]:
+    return get_products()
+
+
+def get_leaderboard_quantity(current_user: CurrentUser) -> list[Product]:
+    return get_products()
