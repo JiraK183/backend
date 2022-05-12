@@ -29,7 +29,7 @@ def get_leaderboard(current_user: CurrentUser) -> list[tuple]:
                 assignees.append(assignee["displayName"])
     # remove duplicate assignees
     assignees = list(set(assignees))
-    
+
     for assignee in assignees:
         # current_user_new = CurrentUser(**{**current_user.dict(), "username": assignee})
         user_coins = get_my_coins(current_user, assignee)
@@ -80,7 +80,7 @@ def get_my_active_stories(current_user: CurrentUser) -> list[tuple]:
     return my_active_issues
 
 
-def get_my_coins(current_user: CurrentUser, username:str="") -> int:
+def get_my_coins(current_user: CurrentUser, username: str = "") -> int:
     my_stories = __get_my_stories(current_user, username)
 
     activity_days = []
@@ -99,7 +99,7 @@ def get_my_coins(current_user: CurrentUser, username:str="") -> int:
             or not __is_issue_complete(issue)
         ):
             points = 0
-        activity_days.append({ "points":points, "date":issue_last_updated})
+        activity_days.append({"points": points, "date": issue_last_updated})
 
     # sort by date
     activity_days = sorted(activity_days, key=lambda x: x["date"])
@@ -124,10 +124,14 @@ def get_my_coins(current_user: CurrentUser, username:str="") -> int:
         if i == 0:
             my_coins += 1000 * streak_multiplier
             continue
-        if __is_date_next_day(activity_days_list[i-1]["date"], activity_days_list[i]["date"]):
+        if __is_date_next_day(
+            activity_days_list[i - 1]["date"], activity_days_list[i]["date"]
+        ):
             streak_multiplier += 0.1
         else:
-            if not __is_date_weekend_gap(activity_days_list[i-1]["date"], activity_days_list[i]["date"]):
+            if not __is_date_weekend_gap(
+                activity_days_list[i - 1]["date"], activity_days_list[i]["date"]
+            ):
                 streak_multiplier -= 0.1
                 if streak_multiplier < 1:
                     streak_multiplier = 1
@@ -138,7 +142,7 @@ def get_my_coins(current_user: CurrentUser, username:str="") -> int:
     for product in my_products:
         my_coins -= product["price"]
 
-    return (my_coins)
+    return my_coins
 
 
 def __is_date_weekend_gap(date1: str, date2: str) -> bool:
@@ -153,7 +157,7 @@ def __is_date_next_day(date1: str, date2: str) -> bool:
     return (date1 - date2).days == 1
 
 
-def __is_date_last_week(date:str) -> bool:
+def __is_date_last_week(date: str) -> bool:
     date = datetime.datetime.strptime(date, "%Y-%m-%d")
     return (datetime.datetime.today() - date).days <= 7
 
@@ -161,7 +165,11 @@ def __is_date_last_week(date:str) -> bool:
 def __is_date_same_day(date1: str, date2: str) -> bool:
     date1 = datetime.datetime.strptime(date1, "%Y-%m-%d")
     date2 = datetime.datetime.strptime(date2, "%Y-%m-%d")
-    return date1.day == date2.day and date1.month == date2.month and date1.year == date2.year
+    return (
+        date1.day == date2.day
+        and date1.month == date2.month
+        and date1.year == date2.year
+    )
 
 
 def __get_my_stories(current_user: CurrentUser, username: str = "") -> list[tuple]:
@@ -192,7 +200,7 @@ def __get_my_stories(current_user: CurrentUser, username: str = "") -> list[tupl
                 my_issues.append(
                     {**issue, "url": f"{current_user.space}/browse/{issue['key']}"}
                 )
-    
+
     return my_issues
 
 
@@ -228,7 +236,7 @@ def get_my_stats(current_user: CurrentUser) -> dict:
             or not __is_issue_complete(issue)
         ):
             points = 0
-        activity_days.append({ "points":points, "date":issue_last_updated})
+        activity_days.append({"points": points, "date": issue_last_updated})
 
     # sort by date
     activity_days = sorted(activity_days, key=lambda x: x["date"])
@@ -249,7 +257,7 @@ def get_my_stats(current_user: CurrentUser) -> dict:
     current_date = datetime.datetime.now().strftime("%Y-%m-%d")
     streak_multiplier = 1
     my_coins = 0
-    
+
     streak = 0
     previous_workday_profit = 0
     weekly_profit = 0
@@ -258,11 +266,15 @@ def get_my_stats(current_user: CurrentUser) -> dict:
         if i == 0:
             my_coins += 1000 * streak_multiplier
             continue
-        if __is_date_next_day(activity_days_list[i-1]["date"], activity_days_list[i]["date"]):
+        if __is_date_next_day(
+            activity_days_list[i - 1]["date"], activity_days_list[i]["date"]
+        ):
             streak_multiplier += 0.1
             streak += 1
         else:
-            if not __is_date_weekend_gap(activity_days_list[i-1]["date"], activity_days_list[i]["date"]):
+            if not __is_date_weekend_gap(
+                activity_days_list[i - 1]["date"], activity_days_list[i]["date"]
+            ):
                 streak_multiplier -= 0.1
                 streak = 0
                 if streak_multiplier < 1:
@@ -283,3 +295,17 @@ def get_my_stats(current_user: CurrentUser) -> dict:
         "previous_workday_profit": previous_workday_profit,
         "weekly_profit": weekly_profit,
     }
+
+
+def get_all_jira_users(current_user: CurrentUser):
+    client = __get_jira_client(current_user=current_user)
+    return client.get_all_assignable_users_for_project(project_key=PROJECT)
+
+
+def get_current_jira_user(current_user: CurrentUser):
+    users = get_all_jira_users(current_user)
+    return [user for user in users if user["emailAddress"] == current_user.username][0]
+
+
+def get_current_jira_user_id(current_user: CurrentUser):
+    return get_current_jira_user(current_user)["accountId"]

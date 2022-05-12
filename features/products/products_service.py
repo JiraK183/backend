@@ -20,7 +20,9 @@ def get_products(match: dict = None) -> list[Product]:
 
 
 def get_user_products(current_user: CurrentUser) -> list[Product]:
-    return get_products({"ownedBy": current_user.username})
+    return get_products(
+        {"ownedBy": jira_service.get_current_jira_user_id(current_user)}
+    )
 
 
 def get_products_by_ids(
@@ -62,18 +64,23 @@ def purchase_product(product_id: str, current_user: CurrentUser) -> None:
     get_products_by_ids([ObjectId(product_id)])  # 404 not found validation
 
     product = products_collection.find_one(
-        {"_id": ObjectId(product_id), "ownedBy": current_user.username}
+        {
+            "_id": ObjectId(product_id),
+            "ownedBy": jira_service.get_current_jira_user_id(current_user),
+        }
     )
 
     if product is not None:
         raise HTTPException(status_code=400, detail="You may not buy an item twice.")
 
+    product = products_collection.find_one({"_id": ObjectId(product_id)})
+
     if product["price"] > jira_service.get_my_coins(current_user):
         raise HTTPException(status_code=400, detail="You don't have enough coins.")
 
-
     products_collection.update_one(
-        {"_id": ObjectId(product_id)}, {"$push": {"ownedBy": current_user.username}}
+        {"_id": ObjectId(product_id)},
+        {"$push": {"ownedBy": jira_service.get_current_jira_user_id(current_user)}},
     )
 
 
@@ -87,9 +94,36 @@ def __parse_product(product: dict) -> Product:
     )
 
 
-def get_leaderboard_quality(current_user: CurrentUser) -> list[Product]:
-    return get_products()
+def get_price_leaderboard(current_user: CurrentUser) -> list[dict]:
+    users = jira_service.get_all_jira_users(current_user)
+    leaderboard = []
+
+    for user in users:
+        user_products = get_products({"ownedBy": user["accountId"]})
+        max_cost = max([p.price for p in user_products]) if len(user_products) else 0
+        leaderboard.append(
+            {
+                "id": user["accountId"],
+                "displayName": user["displayName"],
+                "mostExpensiveItemCost": max_cost,
+            }
+        )
+
+    return sorted(leaderboard, key=lambda u: u["mostExpensiveItemCost"], reverse=True)
 
 
-def get_leaderboard_quantity(current_user: CurrentUser) -> list[Product]:
-    return get_products()
+def get_count_leaderboard(current_user: CurrentUser) -> list[dict]:
+    users = jira_service.get_all_jira_users(current_user)
+    leaderboard = []
+
+    for user in users:
+        user_products = get_products({"ownedBy": user["accountId"]})
+        leaderboard.append(
+            {
+                "id": user["accountId"],
+                "displayName": user["displayName"],
+                "itemsOwned": len(user_products),
+            }
+        )
+
+    return sorted(leaderboard, key=lambda u: u["itemsOwned"], reverse=True)
