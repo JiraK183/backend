@@ -11,7 +11,6 @@ SECRET_KEY = "dd742d6d03ad786aedf841fcae7f58312fa657331450a887e8b110be962a2de1"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -26,8 +25,19 @@ credentials_exception = HTTPException(
 def create_access_token(access_token_request: AccessTokenRequest):
     __validate_jira(access_token_request)
     to_encode = access_token_request.dict()
+    roles = ["user"]
+    try:
+        jira = Jira(
+            url=access_token_request.space,
+            username=access_token_request.username,
+            password=access_token_request.api_key,
+        )
+        jira.get_all_permissions()
+        roles.append("admin")
+    except:
+        pass
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
+    to_encode.update({"exp": expire, "roles": roles})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
