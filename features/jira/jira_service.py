@@ -137,10 +137,10 @@ def get_my_coins(current_user: CurrentUser, username: str = "") -> int:
                     streak_multiplier = 1
         my_coins += 1000 * streak_multiplier + activity_days_list[i]["points"] * 10
 
-    my_products = get_user_products(current_user)
-    # subract my coins by sum of all products
-    for product in my_products:
-        my_coins -= product["price"]
+    # my_products = get_user_products(current_user)
+    # # subract my coins by sum of all products
+    # for product in my_products:
+    #     my_coins -= product["price"]
 
     return my_coins
 
