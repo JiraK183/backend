@@ -1,3 +1,4 @@
+from cmath import log
 import datetime
 from atlassian import Jira
 
@@ -8,6 +9,8 @@ PROJECT = "K183"
 
 
 def get_leaderboard(current_user: CurrentUser) -> list[tuple]:
+    # ! currently issues are obtained 6 times or more, this is a workaround
+    # TODO: implement logic to get issues only once
     jira = __get_jira_client(current_user)
     issues = jira.get_all_project_issues(project=PROJECT)
     # filter issues that have issue['fields']['status']['name'] == "Done"
@@ -26,14 +29,19 @@ def get_leaderboard(current_user: CurrentUser) -> list[tuple]:
         else:
             # if assignee is not in leaderboard, add it to assignees
             if assignee not in assignees:
-                assignees.append(assignee["displayName"])
-    # remove duplicate assignees
-    assignees = list(set(assignees))
+                assignees.append({ "name": assignee["displayName"], "id": assignee["accountId"] })
+    # create a dictionary with assignee name as key and id as value
+    assignees_dict = {}
+    for assignee in assignees:
+        assignees_dict[assignee["name"]] = assignee["id"]
+    
+    #convert this dictionary to object array for easier manipulation
+    assignees = list(assignees_dict.items())
+    
 
     for assignee in assignees:
-        # current_user_new = CurrentUser(**{**current_user.dict(), "username": assignee})
         user_coins = get_my_coins(current_user, assignee)
-        leaderboard[assignee] = user_coins
+        leaderboard[assignee[0]] = user_coins
 
     # sort leaderboard by points
     sorted_leaderboard = sorted(leaderboard.items(), key=lambda x: x[1], reverse=True)
@@ -80,9 +88,13 @@ def get_my_active_stories(current_user: CurrentUser) -> list[tuple]:
     return my_active_issues
 
 
-def get_my_coins(current_user: CurrentUser, username: str = "") -> int:
-    my_stories = __get_my_stories(current_user, username)
-
+def get_my_coins(current_user: CurrentUser, assignee: object = {} ) -> int:
+    
+    my_stories = []
+    if assignee == {}:
+        my_stories = __get_my_stories(current_user)
+    else:
+        my_stories = __get_my_stories(current_user, assignee[0])
     activity_days = []
 
     for issue in my_stories:
@@ -137,10 +149,14 @@ def get_my_coins(current_user: CurrentUser, username: str = "") -> int:
                     streak_multiplier = 1
         my_coins += 1000 * streak_multiplier + activity_days_list[i]["points"] * 10
 
-    # my_products = get_user_products(current_user)
-    # # subract my coins by sum of all products
-    # for product in my_products:
-    #     my_coins -= product["price"]
+    my_products = []
+    if assignee == {}:
+        my_products = get_user_products(current_user)
+    else:
+        my_products = get_user_products(current_user, assignee[1])
+    # subract my coins by sum of all products
+    for product in my_products:
+        my_coins -= product.price
 
     return my_coins
 

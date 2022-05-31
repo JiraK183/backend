@@ -1,3 +1,4 @@
+import string
 from typing import Union, Optional
 
 from bson import ObjectId
@@ -19,9 +20,14 @@ def get_products(match: dict = None) -> list[Product]:
     return [__parse_product(product) for product in product_dicts]
 
 
-def get_user_products(current_user: CurrentUser) -> list[Product]:
-    return get_products(
+def get_user_products(current_user: CurrentUser, id: string = '') -> list[Product]:
+    if id == '':
+        return get_products(
         {"ownedBy": jira_service.get_current_jira_user_id(current_user)}
+    )
+    else:
+        return get_products(
+        {"ownedBy": id}
     )
 
 
