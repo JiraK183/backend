@@ -1,6 +1,7 @@
 from cmath import log
 import datetime
 from atlassian import Jira
+from pandas import array
 
 from features.auth.models import CurrentUser
 from features.products.products_service import get_user_products
@@ -9,13 +10,15 @@ PROJECT = "K183"
 
 
 def get_leaderboard(current_user: CurrentUser) -> list[tuple]:
-    # ! currently issues are obtained 6 times or more, this is a workaround
-    # TODO: implement logic to get issues only once
     jira = __get_jira_client(current_user)
     issues = jira.get_all_project_issues(project=PROJECT)
+    all_issues = issues
+    while len(issues) == 50:
+        issues = jira.get_all_project_issues(project=PROJECT, start=len(all_issues))
+        all_issues = [*all_issues, *issues]
     # filter issues that have issue['fields']['status']['name'] == "Done"
     done_issues = []
-    for issue in issues:
+    for issue in all_issues:
         if __is_issue_complete(issue):
             done_issues.append(issue)
     # group results by assignee and add total points
@@ -40,7 +43,7 @@ def get_leaderboard(current_user: CurrentUser) -> list[tuple]:
     
 
     for assignee in assignees:
-        user_coins = get_my_coins(current_user, assignee)
+        user_coins = get_my_coins(current_user, assignee, all_issues)
         leaderboard[assignee[0]] = user_coins
 
     # sort leaderboard by points
@@ -88,13 +91,13 @@ def get_my_active_stories(current_user: CurrentUser) -> list[tuple]:
     return my_active_issues
 
 
-def get_my_coins(current_user: CurrentUser, assignee: object = {} ) -> int:
+def get_my_coins(current_user: CurrentUser, assignee: object = {}, stories =[] ) -> int:
     
     my_stories = []
     if assignee == {}:
         my_stories = __get_my_stories(current_user)
     else:
-        my_stories = __get_my_stories(current_user, assignee[0])
+        my_stories = __get_my_stories(current_user, assignee[0], stories)
     activity_days = []
 
     for issue in my_stories:
@@ -188,13 +191,19 @@ def __is_date_same_day(date1: str, date2: str) -> bool:
     )
 
 
-def __get_my_stories(current_user: CurrentUser, username: str = "") -> list[tuple]:
+def __get_my_stories(current_user: CurrentUser, username: str = "", issues=[]) -> list[tuple]:
+
     jira = __get_jira_client(current_user)
-    issues = jira.get_all_project_issues(project=PROJECT)
     all_issues = issues
-    while len(issues) == 50:
-        issues = jira.get_all_project_issues(project=PROJECT, start=len(all_issues))
-        all_issues = [*all_issues, *issues]
+    if(issues == []):
+        all_issues = jira.get_all_project_issues(project=PROJECT)
+    
+    print('Get my stories')
+    if(issues == []):
+        while len(all_issues) == 50:
+            issues = jira.get_all_project_issues(project=PROJECT, start=len(all_issues))
+            all_issues = [*all_issues, *issues]
+            print('getting stories')
     my_issues = []
     for issue in all_issues:
         # if username contains an @, it is a email address, otherwise it is a username
