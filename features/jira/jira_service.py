@@ -1,7 +1,6 @@
 from cmath import log
 import datetime
 from atlassian import Jira
-from pandas import array
 
 from features.auth.models import CurrentUser
 from features.products.products_service import get_user_products
