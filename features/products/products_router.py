@@ -4,6 +4,7 @@ from features.auth.auth_service import get_current_user
 from features.auth.models import CurrentUser
 from features.products import products_service
 from features.products.dtos import CreateProductRequest
+from models import OID
 
 products_router = APIRouter(
     prefix="/products", tags=["Products"], dependencies=[Depends(get_current_user)]
@@ -18,6 +19,11 @@ async def get_products():
 @products_router.post("/")
 async def create_product(create_product_request: CreateProductRequest):
     return products_service.create_product(create_product_request)
+
+
+@products_router.put("/{product_id}/")
+async def update_product(product_id: OID, update_product_request: CreateProductRequest):
+    return products_service.update_product(product_id, update_product_request)
 
 
 @products_router.get("/my")

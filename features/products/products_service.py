@@ -59,6 +59,19 @@ def create_product(
     )
 
 
+def update_product(
+    product_id: OID, update_product_request: CreateProductRequest,
+) -> Product:
+    request_body = update_product_request.dict()
+
+    products_collection.update_one({"_id": product_id}, {"$set": request_body})
+
+    return Product(
+        **request_body,
+        id=product_id,
+    )
+
+
 def delete_product(product_id: str) -> None:
     result = products_collection.delete_one({"_id": ObjectId(product_id)})
 
