@@ -23,6 +23,8 @@ async def create_product(create_product_request: CreateProductRequest):
 
 @products_router.put("/{product_id}/")
 async def update_product(product_id: OID, update_product_request: CreateProductRequest):
+    print(product_id)
+    print(update_product_request)
     return products_service.update_product(product_id, update_product_request)
 
 
